@@ -1,7 +1,9 @@
 from .models import Story
 from .serializers import StorySerializer, UserSerializer
+from .google_cloud_client import GoogleStoreClient
 
 from django.shortcuts import render
+from django.http import JsonResponse
 from rest_framework.renderers import JSONRenderer
 from rest_framework import viewsets
 from rest_framework.decorators import permission_classes
@@ -20,6 +22,16 @@ class CreateUserViewSet(CreateAPIView):
     model = get_user_model()
     permission_classes(AllowAny)
     serializer_class = UserSerializer
+    
+class CreateStoryViewSet(CreateAPIView):
+    model = Story
+    permission_classes = (IsAuthenticated,)
+    serializer_class = StorySerializer
+    
+def get_upload_session_url(request):
+    client = GoogleStoreClient("yuga-171020.appspot.com")       
+    response_json = {"upload_session_url" : client.create_upload_session_url()}
+    return JsonResponse(response_json)
 
     
 # class ExceptionLoggingMiddleware(object):

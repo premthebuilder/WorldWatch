@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
 from django.conf.global_settings import LOGIN_REDIRECT_URL
+import datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -115,6 +116,11 @@ AUTH_PASSWORD_VALIDATORS = [
 #     ),
 # }
 
+REST_FRAMEWORK = { 
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ),
+}
 
 
 # Internationalization
@@ -159,6 +165,9 @@ LOGGING = {
         },
     },
 }
+
+# JWT Setting Override
+JWT_EXPIRATION_DELTA = datetime.timedelta(seconds=30000)
 
 # REST_FRAMEWORK = {
 # 'PAGINATE_BY': 10,

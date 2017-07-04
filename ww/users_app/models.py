@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 # Create your models here.
 
 class Story(models.Model):
-    author = models.ManyToManyField(User)
+    author = models.ForeignKey(User)
     title = models.CharField(max_length = 150)
     text = models.TextField()
     approvals = models.IntegerField(blank=True)
@@ -45,7 +45,7 @@ class Item(models.Model):
     description = models.CharField(
         max_length = 150,
         blank = True)
-    package = models.ForeignKey(Package)
+    story = models.ForeignKey(Story)
     source_url = models.CharField(
         max_length = 150,
         blank = True)
