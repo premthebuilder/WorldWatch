@@ -6,7 +6,9 @@
 #Print out all output from your program to STDOUT
 
 from __future__ import print_function
+
 import sys
+
 
 data = sys.stdin.read().splitlines()
 

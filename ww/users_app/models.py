@@ -1,9 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 # Create your models here.
-
 class Story(models.Model):
     author = models.ForeignKey(User)
     title = models.CharField(max_length = 150)
@@ -45,7 +44,7 @@ class Item(models.Model):
     description = models.CharField(
         max_length = 150,
         blank = True)
-    story = models.ForeignKey(Story)
+    story = models.ForeignKey(Story) # This is Django's alternative to OneToMany relationship
     source_url = models.CharField(
         max_length = 150,
         blank = True)

@@ -6,4 +6,7 @@
 <key>DJANGO_MANAGE_LOCATION</key>
 <value>ww/manage.py</value>
 </pydev_variables_property>
+<pydev_pathproperty name="org.python.pydev.PROJECT_EXTERNAL_SOURCE_PATH">
+<path>/Users/aster/.virtualenvs/ww/lib/python3.5/site-packages/google</path>
+</pydev_pathproperty>
 </pydev_project>
