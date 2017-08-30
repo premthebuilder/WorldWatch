@@ -44,7 +44,7 @@ class Item(models.Model):
     description = models.CharField(
         max_length = 150,
         blank = True)
-    story = models.ForeignKey(Story) # This is Django's alternative to OneToMany relationship
+    story = models.ForeignKey(Story, related_name= 'items') # This is Django's alternative to OneToMany relationship
     source_url = models.CharField(
         max_length = 150,
         blank = True)

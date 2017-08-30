@@ -7,7 +7,8 @@ from rest_framework_jwt.views import obtain_jwt_token
 from users_app.views import (StoryViewSet,
     CreateUserViewSet, CreateStoryViewSet,
     CreateItemViewSet,
-    get_upload_session_url)
+    get_upload_session_url,
+    get_download_session_url)
 
 
 router = routers.DefaultRouter()
@@ -22,4 +23,5 @@ urlpatterns = [
     url(r'^create/item/', CreateItemViewSet.as_view(), name="item"),
     url(r'^view/story/all', StoryViewSet.as_view({'get':'list'}), name="story_list"),
     url(r'^upload_session_url/', get_upload_session_url, name="upload_url"),
+    url(r'^download_session_url/', get_download_session_url, name="upload_url"),
 ]

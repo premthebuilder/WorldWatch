@@ -27,8 +27,23 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('username', 'password', 'email', 'first_name')
-        
+   
+class ItemSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(
+        read_only = True,
+        default=serializers.CreateOnlyDefault(timezone.now)
+        )
+    updated_at = serializers.DateTimeField(
+        read_only = True,
+        default=serializers.CreateOnlyDefault(timezone.now)
+        )
+    class Meta:
+        model = Item
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at',)
+             
 class StorySerializer(serializers.ModelSerializer):
+    items = ItemSerializer(many=True, read_only=True)
     author = serializers.PrimaryKeyRelatedField(
         read_only=True,
         default=serializers.CurrentUserDefault())
@@ -48,17 +63,4 @@ class StorySerializer(serializers.ModelSerializer):
         model = Story
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at',)
-         
-class ItemSerializer(serializers.ModelSerializer):
-    created_at = serializers.DateTimeField(
-        read_only = True,
-        default=serializers.CreateOnlyDefault(timezone.now)
-        )
-    updated_at = serializers.DateTimeField(
-        read_only = True,
-        default=serializers.CreateOnlyDefault(timezone.now)
-        )
-    class Meta:
-        model = Item
-        fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at',)
+        

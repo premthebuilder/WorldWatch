@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from .gcs_signed_url import CloudStorageURLSigner
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
+from . import util
 
 
 import base64
@@ -65,6 +66,7 @@ class CreateItemViewSet(CreateAPIView):
 @csrf_exempt
 def get_upload_session_url(request):
     image_md5 = request.POST.get("md5")
+    object_name = util.generate_uuid() + ".jpg"
     if image_md5:
         try:
           keytext = open(conf.PRIVATE_KEY_PATH, 'rb').read()
@@ -74,10 +76,28 @@ def get_upload_session_url(request):
         private_key = RSA.importKey(keytext)
         signer = CloudStorageURLSigner(private_key, conf.SERVICE_ACCOUNT_EMAIL,
                                        GCS_API_ENDPOINT)
-        file_path = '/%s/%s' % (conf.BUCKET_NAME, conf.OBJECT_NAME)
+        file_path = '/%s/%s' % (conf.BUCKET_NAME, object_name)
         put_request = signer.GeneratePutUrl(file_path, 'image/jpeg', image_md5)
         response_json = {"upload_session_url" : put_request}
         return JsonResponse(response_json)
+    
+    
+@api_view(['POST'])
+@csrf_exempt
+def get_download_session_url(request):
+    object_name = request.POST.get("objectName")
+    try:
+      keytext = open(conf.PRIVATE_KEY_PATH, 'rb').read()
+    except IOError as e:
+      sys.exit('Error while reading private key: %s' % e)
+    
+    private_key = RSA.importKey(keytext)
+    signer = CloudStorageURLSigner(private_key, conf.SERVICE_ACCOUNT_EMAIL,
+                                   GCS_API_ENDPOINT)
+    file_path = '/%s/%s' % (conf.BUCKET_NAME, object_name)
+    put_request = signer.GenerateGetUrl(file_path)
+    response_json = {"download_session_url" : put_request}
+    return JsonResponse(response_json)
 #     client = GoogleStoreClient("yuga-171020.appspot.com")       
 #     response_json = {"upload_session_url" : client.create_upload_session_url()}
 #     return JsonResponse(response_json)
