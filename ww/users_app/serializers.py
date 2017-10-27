@@ -44,6 +44,10 @@ class ItemSerializer(serializers.ModelSerializer):
              
 class StorySerializer(serializers.ModelSerializer):
     items = ItemSerializer(many=True, read_only=True)
+    approval_ids = serializers.PrimaryKeyRelatedField(many=True, 
+                                                   read_only=False, 
+                                                   queryset=get_user_model().objects.all(), 
+                                                   source='approvals')
     author = serializers.PrimaryKeyRelatedField(
         read_only=True,
         default=serializers.CurrentUserDefault())
@@ -55,10 +59,6 @@ class StorySerializer(serializers.ModelSerializer):
         read_only = True,
         default=serializers.CreateOnlyDefault(timezone.now)
         )
-    approvals = serializers.IntegerField(
-        default=serializers.CreateOnlyDefault(0))
-    disapprovals = serializers.IntegerField(
-        default=serializers.CreateOnlyDefault(0))
     class Meta:
         model = Story
         fields = '__all__'

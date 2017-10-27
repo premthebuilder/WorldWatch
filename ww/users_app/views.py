@@ -2,9 +2,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.http import JsonResponse
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
+from rest_framework import filters
 from rest_framework.decorators import permission_classes
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
@@ -25,6 +27,7 @@ import Crypto.PublicKey.RSA as RSA
 import Crypto.Signature.PKCS1_v1_5 as PKCS1_v1_5
 import requests
 from . import conf
+from django_filters.rest_framework.backends import DjangoFilterBackend
 # try:
 #   import conf
 # except ImportError:
@@ -43,6 +46,9 @@ from .serializers import (StorySerializer,
 
 class StoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter,)
+    search_fields = ['title', 'text']
+    ordering = ['title', 'text']
     queryset = Story.objects.all().order_by('created_at')
     serializer_class = StorySerializer
     
@@ -61,6 +67,28 @@ class CreateItemViewSet(CreateAPIView):
     model = Item
     permission_classes = (IsAuthenticated,)
     serializer_class = ItemSerializer
+    
+# class AddApproval(UpdateAPIView):
+#     queryset = Story.objects.all()
+#     serializer_class = StorySerializer
+#     permission_classes = (IsAuthenticated,)
+# 
+#     def update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         user_approved = get_user_model().objects.get(pk=request.data.get("new_approval"))
+#         instance.approvals.add(user_approved)
+#         instance.save()
+# 
+#         serializer = self.get_serializer(instance)
+#         serializer.is_valid(raise_exception=True)
+#         self.perform_update(serializer)
+# 
+#         return Response(serializer.data)
+
+class StoryUpdateView(UpdateAPIView):
+    queryset = Story.objects.all()
+    serializer_class = StorySerializer
+
     
 @api_view(['POST'])
 @csrf_exempt

@@ -29,7 +29,7 @@ SECRET_KEY = 'qesvo&%xy+ag&%9jtekagzv=($h60p5@j%yv2+=4i_9e(5%3=z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.86.170', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -122,6 +122,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',)
 }
 
 
