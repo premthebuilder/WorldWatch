@@ -48,6 +48,10 @@ class StorySerializer(serializers.ModelSerializer):
                                                    read_only=False, 
                                                    queryset=get_user_model().objects.all(), 
                                                    source='approvals')
+    disapproval_ids = serializers.PrimaryKeyRelatedField(many=True, 
+                                                   read_only=False, 
+                                                   queryset=get_user_model().objects.all(), 
+                                                   source='disapprovals')
     author = serializers.PrimaryKeyRelatedField(
         read_only=True,
         default=serializers.CurrentUserDefault())

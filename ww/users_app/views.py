@@ -3,7 +3,7 @@ from django.contrib.auth.models import Permission
 from django.http import JsonResponse
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework import filters
 from rest_framework.decorators import permission_classes
 from rest_framework.generics import CreateAPIView, UpdateAPIView
@@ -89,7 +89,35 @@ class StoryUpdateView(UpdateAPIView):
     queryset = Story.objects.all()
     serializer_class = StorySerializer
 
+@api_view(['get'])
+@csrf_exempt
+def get_current_user(request):
+    if request.user:
+        return JsonResponse({
+                "username" : request.user.username,
+                "first_name": request.user.first_name,
+                "last_name": request.user.last_name,
+            })
+    else:
+        return Response("UserNotLoggedIn", status=status.HTTP_401_UNAUTHORIZED)
     
+@api_view(['POST'])
+@csrf_exempt
+def add_story_approval(request):
+    if request.user:
+        try:
+            story_id = request.POST.get("story_id")
+            story = Story.objects.get(pk=story_id)
+            story.approvals.add(request.user)
+            story.save()
+            serializer = StorySerializer(story)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response("ErrorFetchingStory: " + str(e), status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response("UserNotLoggedIn", status=status.HTTP_401_UNAUTHORIZED)
+
+
 @api_view(['POST'])
 @csrf_exempt
 def get_upload_session_url(request):

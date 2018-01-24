@@ -7,8 +7,8 @@ from rest_framework_jwt.views import obtain_jwt_token
 from users_app.views import (StoryViewSet,
     CreateUserViewSet, CreateStoryViewSet,
     CreateItemViewSet, StoryUpdateView,
-    get_upload_session_url,
-    get_download_session_url)
+    get_current_user, get_upload_session_url,
+    get_download_session_url, add_story_approval)
 
 router = routers.DefaultRouter()
 router.register(r'story', StoryViewSet)
@@ -19,6 +19,8 @@ urlpatterns = [
     url(r'^register/$', CreateUserViewSet.as_view(), name='user'),
     url(r'^api-token-auth/', obtain_jwt_token),
     url(r'^create/story/', CreateStoryViewSet.as_view(), name='story'),
+    url(r'^approve_story/', add_story_approval, name="approve_story"),
+    url(r'^get_user_info/', get_current_user, name="user_info"),
     url(r'^create/item/', CreateItemViewSet.as_view(), name="item"),
     url(r'^view/story/all', StoryViewSet.as_view({'get':'list'}), name="story_list"),
     url(r'^view/story/(?P<pk>[0-9]+)/$', StoryViewSet.as_view({'get':'retrieve'}), name='get_story'),
