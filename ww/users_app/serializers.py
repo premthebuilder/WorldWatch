@@ -6,9 +6,14 @@ from django.template.defaultfilters import default
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.fields import NOT_READ_ONLY_WRITE_ONLY
+import logging
+from logging.config import _handle_existing_loggers
+logger = logging.getLogger(__name__)
 
-from .models import Story, Item
-
+try:
+    from .models import Story, Item, Tag
+except Exception:
+    from models import Story, Item, Tag
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -41,6 +46,27 @@ class ItemSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at',)
+        
+class TagSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        many = kwargs.pop('many', True)
+        super(TagSerializer, self).__init__(many=many, *args, **kwargs)
+    created_at = serializers.DateTimeField(
+        read_only = True,
+        default=serializers.CreateOnlyDefault(timezone.now)
+        )
+    updated_at = serializers.DateTimeField(
+        read_only = True,
+        default=serializers.CreateOnlyDefault(timezone.now)
+        )
+    class Meta:
+        model = Tag
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at',)
+        
+    def create(self, validated_data):
+        instance, _ = Tag.objects.get_or_create(**validated_data)
+        return instance
              
 class StorySerializer(serializers.ModelSerializer):
     items = ItemSerializer(many=True, read_only=True)
@@ -67,4 +93,22 @@ class StorySerializer(serializers.ModelSerializer):
         model = Story
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at',)
+    
+#     def create(self, validated_data):
+#         tags_data = validated_data.pop('tags')
+#         story = Story.objects.create(**validated_data)
+#         for tag in tags_data:
+#             tag_data = {"name": tag_name}
+#             tag_obj, created = Tag.objects.get_or_create(**tag_data)
+#             story.tags.add(tag_obj)
+#         story.save()
+#         return story
+    
+if __name__ == "__main__":
+    data = {
+        "title": "titletest",
+        "text": "test",
+    }
+    serializer = StorySerializer(data = data)
+    serializer.is_valid()
         

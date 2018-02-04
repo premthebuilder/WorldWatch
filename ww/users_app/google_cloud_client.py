@@ -7,7 +7,7 @@ from django.contrib.gis.maps import google
 
 from google.cloud import storage
 from google.cloud.storage.blob import Blob
-from test.support import resource
+# from test.support import resource
 
 
 logger = logging.getLogger(__name__)

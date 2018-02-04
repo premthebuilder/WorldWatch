@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import datetime
 import os
 
-from django.conf.global_settings import LOGIN_REDIRECT_URL
+from django.conf.global_settings import LOGIN_REDIRECT_URL, STATIC_ROOT
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -30,8 +30,7 @@ SECRET_KEY = 'qesvo&%xy+ag&%9jtekagzv=($h60p5@j%yv2+=4i_9e(5%3=z'
 DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.86.170', 'localhost', '127.0.0.1']
-
-
+LOCKDOWN_ADMIN = False
 # Application definition
 
 INSTALLED_APPS = [
@@ -158,13 +157,13 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console'],
-            'level': 'DEBUG'
-#             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+#             'level': 'DEBUG'
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
         'django.request': {
             'handlers': ['console'],
-            'level': 'DEBUG'
-#             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+#             'level': 'DEBUG'
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
     },
 }

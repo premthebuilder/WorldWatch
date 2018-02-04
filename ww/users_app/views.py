@@ -38,19 +38,25 @@ from django_filters.rest_framework.backends import DjangoFilterBackend
 GCS_API_ENDPOINT = 'https://storage.googleapis.com'
 
 from .google_cloud_client import GoogleStoreClient
-from .models import Story, Item
+from .models import Story, Item, Tag
 from .serializers import (StorySerializer,
                            UserSerializer,
-                           ItemSerializer)
+                           ItemSerializer,
+                           TagSerializer)
 
 
 class StoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_backends = (filters.SearchFilter, filters.OrderingFilter,)
-    search_fields = ['title', 'text']
+    search_fields = ['title', 'text', 'tags__name']
     ordering = ['title', 'text']
     queryset = Story.objects.all().order_by('created_at')
     serializer_class = StorySerializer
+    
+class TagViewSet(viewsets.ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    model = Tag
+    serializer_class = TagSerializer
     
 class CreateUserViewSet(CreateAPIView):
 #     renderer_classes = (JSONRenderer,)
@@ -60,7 +66,7 @@ class CreateUserViewSet(CreateAPIView):
     
 class CreateStoryViewSet(CreateAPIView):
     model = Story
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,) #TODO: Change this to IsAuthe
     serializer_class = StorySerializer
     
 class CreateItemViewSet(CreateAPIView):
@@ -117,7 +123,29 @@ def add_story_approval(request):
     else:
         return Response("UserNotLoggedIn", status=status.HTTP_401_UNAUTHORIZED)
 
-
+@api_view(['POST'])
+@csrf_exempt
+def create_story_with_tags(request):
+    if request.user:
+        try:
+            request.POST._mutable = True
+            tags_data = request.POST.pop("tags")[0]
+            tags_data = tags_data.split(",")
+            story_serializer = StorySerializer(context = {'request':request}, data = request.POST)
+            if story_serializer.is_valid():
+                story = story_serializer.save()
+                for tag_data in tags_data:
+                    tag_serializer = TagSerializer(data={"name": tag_data})
+                    if tag_serializer.is_valid():
+                        tag = tag_serializer.save()
+                        story.tags.add(tag)
+                story.save()
+                return Response(story_serializer.data)
+        except Exception as e:
+            return Response("ErrorCreatingStory: " + str(e), status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response("UserNotLoggedIn", status=status.HTTP_401_UNAUTHORIZED)      
+                
 @api_view(['POST'])
 @csrf_exempt
 def get_upload_session_url(request):
@@ -154,6 +182,8 @@ def get_download_session_url(request):
     put_request = signer.GenerateGetUrl(file_path)
     response_json = {"download_session_url" : put_request}
     return JsonResponse(response_json)
+
+
 #     client = GoogleStoreClient("yuga-171020.appspot.com")       
 #     response_json = {"upload_session_url" : client.create_upload_session_url()}
 #     return JsonResponse(response_json)
