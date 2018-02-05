@@ -42,7 +42,8 @@ from .models import Story, Item, Tag
 from .serializers import (StorySerializer,
                            UserSerializer,
                            ItemSerializer,
-                           TagSerializer)
+                           TagSerializer,
+                           LocationSerializer)
 
 
 class StoryViewSet(viewsets.ModelViewSet):
@@ -129,9 +130,10 @@ def create_story_with_tags(request):
     if request.user:
         try:
             request.POST._mutable = True
-            tags_data = request.POST.pop("tags")[0]
+            tags_data = request.data.pop("tags")[0] if request.data.get("tags") else ""
+            location_data = request.data.pop("location") if request.data.get("location") else {}
             tags_data = tags_data.split(",")
-            story_serializer = StorySerializer(context = {'request':request}, data = request.POST)
+            story_serializer = StorySerializer(context = {'request':request}, data = request.data)
             if story_serializer.is_valid():
                 story = story_serializer.save()
                 for tag_data in tags_data:
@@ -140,6 +142,13 @@ def create_story_with_tags(request):
                         tag = tag_serializer.save()
                         story.tags.add(tag)
                 story.save()
+                if location_data:
+                    location_serializer = LocationSerializer(data=location_data)
+                    if location_serializer.is_valid():
+                        location = location_serializer.save()
+                        story.location.add(location)
+                        story.save()
+                    
                 return Response(story_serializer.data)
         except Exception as e:
             return Response("ErrorCreatingStory: " + str(e), status=status.HTTP_404_NOT_FOUND)

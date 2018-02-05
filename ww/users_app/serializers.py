@@ -11,9 +11,9 @@ from logging.config import _handle_existing_loggers
 logger = logging.getLogger(__name__)
 
 try:
-    from .models import Story, Item, Tag
+    from .models import Story, Item, Tag, Location
 except Exception:
-    from models import Story, Item, Tag
+    from models import Story, Item, Tag, Location
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -44,6 +44,20 @@ class ItemSerializer(serializers.ModelSerializer):
         )
     class Meta:
         model = Item
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at',)
+        
+class LocationSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(
+        read_only = True,
+        default=serializers.CreateOnlyDefault(timezone.now)
+        )
+    updated_at = serializers.DateTimeField(
+        read_only = True,
+        default=serializers.CreateOnlyDefault(timezone.now)
+        )
+    class Meta:
+        model = Location
         fields = '__all__'
         read_only_fields = ('created_at', 'updated_at',)
         

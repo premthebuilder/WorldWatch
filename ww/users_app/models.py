@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.apps.config import MODELS_MODULE_NAME
+from datetime import datetime
 
 class Tag(models.Model):
     name = models.CharField(max_length = 80, primary_key = True)
@@ -32,9 +33,10 @@ class Location(models.Model):
     postal_code = models.CharField(
         max_length = 80,
         blank = True)
-    gps_location = models.CharField(
-        max_length = 80,
-        blank = True)
+    longitude = models.FloatField(default = 0, blank = True)
+    latitude = models.FloatField(default=0, blank = True)
+    created_at = models.DateTimeField(default = datetime.now)
+    updated_at = models.DateTimeField(default = datetime.now)
     
 # Create your models here.
 class Story(models.Model):
@@ -42,7 +44,7 @@ class Story(models.Model):
     title = models.CharField(max_length = 150)
     text = models.TextField()
     tags = models.ManyToManyField(Tag, related_name="tag", blank=True)
-#     location = models.ForeignKey(Location, related_name="location", blank=True)
+    location = models.ManyToManyField(Location, related_name="location", blank=True)
     approvals = models.ManyToManyField(User, related_name="user_approvals", blank = True)
     disapprovals = models.ManyToManyField(User, related_name="user_disapprovals", blank = True)
     disable_comments = models.BooleanField()
