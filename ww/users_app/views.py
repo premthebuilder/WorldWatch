@@ -37,7 +37,7 @@ from django_filters.rest_framework.backends import DjangoFilterBackend
 # The Google Cloud Storage API endpoint. You should not need to change this.
 GCS_API_ENDPOINT = 'https://storage.googleapis.com'
 
-from .google_cloud_client import GoogleStoreClient
+# from .google_cloud_client import GoogleStoreClient
 from .models import Story, Item, Tag
 from .serializers import (StorySerializer,
                            UserSerializer,
@@ -130,17 +130,22 @@ def create_story_with_tags(request):
     if request.user:
         try:
             request.POST._mutable = True
-            tags_data = request.data.pop("tags")[0] if request.data.get("tags") else ""
-            location_data = request.data.pop("location") if request.data.get("location") else {}
+            tags_data = request.data.pop("tags")[0] if "tags" in request.data else ""
+            latitude = request.data.pop("latitude")[0] if "latitude" in request.data else None
+            longitude = request.data.pop("longitude")[0] if "longitude" in request.data else None
+            location_data = {}
+            if latitude and longitude:
+                location_data = {"latitude": float(latitude), "longitude": float(longitude)}
             tags_data = tags_data.split(",")
             story_serializer = StorySerializer(context = {'request':request}, data = request.data)
             if story_serializer.is_valid():
                 story = story_serializer.save()
                 for tag_data in tags_data:
-                    tag_serializer = TagSerializer(data={"name": tag_data})
-                    if tag_serializer.is_valid():
-                        tag = tag_serializer.save()
-                        story.tags.add(tag)
+                    if tag_data:
+                        tag_serializer = TagSerializer(data={"name": tag_data})
+                        if tag_serializer.is_valid():
+                            tag = tag_serializer.save()
+                            story.tags.add(tag)
                 story.save()
                 if location_data:
                     location_serializer = LocationSerializer(data=location_data)

@@ -40,7 +40,7 @@ class Location(models.Model):
     
 # Create your models here.
 class Story(models.Model):
-    author = models.ForeignKey(User)
+    author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     title = models.CharField(max_length = 150)
     text = models.TextField()
     tags = models.ManyToManyField(Tag, related_name="tag", blank=True)
@@ -54,14 +54,14 @@ class Story(models.Model):
 class Package(models.Model):
     name = models.CharField(max_length=75)
     description = models.CharField(max_length=300)
-    story = models.ForeignKey(Story)
+    story = models.ForeignKey(Story, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
     
     
 class Comment(models.Model):
-    story = models.ForeignKey(Story)
-    author = models.ForeignKey(User)
+    story = models.ForeignKey(Story, on_delete=models.DO_NOTHING)
+    author = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     text = models.TextField()
     created_at = models.DateTimeField()
     updated_at = models.DateTimeField()
@@ -72,7 +72,7 @@ class Item(models.Model):
     description = models.CharField(
         max_length = 150,
         blank = True)
-    story = models.ForeignKey(Story, related_name= 'items') # This is Django's alternative to OneToMany relationship
+    story = models.ForeignKey(Story, related_name= 'items', on_delete=models.DO_NOTHING) # This is Django's alternative to OneToMany relationship
     source_url = models.CharField(
         max_length = 150,
         blank = True)

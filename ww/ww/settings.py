@@ -13,7 +13,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import datetime
 import os
 
-from django.conf.global_settings import LOGIN_REDIRECT_URL, STATIC_ROOT
+from django.conf.global_settings import LOGIN_REDIRECT_URL, STATIC_ROOT,\
+    STATIC_URL, ALLOWED_HOSTS
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -29,7 +30,9 @@ SECRET_KEY = 'qesvo&%xy+ag&%9jtekagzv=($h60p5@j%yv2+=4i_9e(5%3=z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.86.170', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS = ['192.168.86.170', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
+
 LOCKDOWN_ADMIN = False
 # Application definition
 
@@ -80,13 +83,68 @@ WSGI_APPLICATION = 'ww.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
+# [START db_setup]
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        # If you are using Cloud SQL for MySQL rather than PostgreSQL, set
+        # 'ENGINE': 'django.db.backends.mysql' instead of the following.
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'yuga',
+        'USER': 'yuga',
+        'PASSWORD': 'street',
+        # For MySQL, set 'PORT': '3306' instead of the following. Any Cloud
+        # SQL Proxy instances running locally must also be set to tcp:3306.
+        'PORT': '5432',
     }
 }
-
+# In the flexible environment, you connect to CloudSQL using a unix socket.
+# Locally, you can use the CloudSQL proxy to proxy a localhost connection
+# to the instance
+DATABASES['default']['HOST'] = '/cloudsql/yuga-171020:us-central1:yuga-s1'
+if os.getenv('GAE_INSTANCE'):
+    pass
+else:
+    DATABASES['default']['HOST'] = '127.0.0.1'
+    DATABASES['default']['PORT'] = '5432'
+    
+    
+# if os.getenv('GAE_INSTANCE'):
+#     # Running on production App Engine, so connect to Google Cloud SQL using
+#     # the unix socket at /cloudsql/<your-cloudsql-connection string>
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'HOST': '/cloudsql/yuga-171020:us-central1:yuga-s1',
+#             'NAME': 'yuga',
+#             'USER': 'yuga',
+#             'PASSWORD': 'street',
+#         }
+#     }
+# else:
+#     # Running locally so connect to either a local MySQL instance or connect to
+#     # Cloud SQL via the proxy. To start the proxy via command line:
+#     #
+#     #     $ cloud_sql_proxy -instances=[INSTANCE_CONNECTION_NAME]=tcp:3306
+#     #
+#     # See https://cloud.google.com/sql/docs/mysql-connect-proxy
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql',
+#             'HOST': '127.0.0.1',
+#             'PORT': '3306',
+#             'NAME': 'yuga',
+#             'USER': 'yuga',
+#             'PASSWORD': 'street',
+#         }
+#     }
+# [END db_setup]
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
@@ -143,6 +201,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+# STATIC_URL = 'https://storage.googleapis.com/yugastatic/static/'
+
+STATIC_ROOT = 'static'
 
 LOGIN_REDIRECT_URL = "/story/"
 
@@ -158,12 +219,12 @@ LOGGING = {
         'django': {
             'handlers': ['console'],
 #             'level': 'DEBUG'
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
         },
         'django.request': {
             'handlers': ['console'],
 #             'level': 'DEBUG'
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
         },
     },
 }
