@@ -16,6 +16,7 @@ import os
 from django.conf.global_settings import LOGIN_REDIRECT_URL, STATIC_ROOT,\
     STATIC_URL, ALLOWED_HOSTS
 
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -211,20 +212,17 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': PROJECT_ROOT + '/../logs/debug.log',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
-#             'level': 'DEBUG'
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-        },
-        'django.request': {
-            'handlers': ['console'],
-#             'level': 'DEBUG'
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
 }

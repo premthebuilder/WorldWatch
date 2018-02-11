@@ -14,6 +14,7 @@ from .gcs_signed_url import CloudStorageURLSigner
 from rest_framework.decorators import api_view
 from django.views.decorators.csrf import csrf_exempt
 from . import util
+from .cmixins.logger_mixin import LoggingMixin
 
 
 import base64
@@ -46,13 +47,52 @@ from .serializers import (StorySerializer,
                            LocationSerializer)
 
 
-class StoryViewSet(viewsets.ModelViewSet):
+class StoryViewSet(LoggingMixin, viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     filter_backends = (filters.SearchFilter, filters.OrderingFilter,)
     search_fields = ['title', 'text', 'tags__name']
     ordering = ['title', 'text']
     queryset = Story.objects.all().order_by('created_at')
     serializer_class = StorySerializer
+    
+    def create(self, request, *args, **kwargs):
+        if request.user:
+            try:
+                request.POST._mutable = True
+                tags_data = request.data.pop("tags")[0] if "tags" in request.data else ""
+                latitude = request.data.pop("latitude")[0] if "latitude" in request.data else None
+                longitude = request.data.pop("longitude")[0] if "longitude" in request.data else None
+                location_data = {}
+                if latitude and longitude:
+                    location_data = {"latitude": float(latitude), "longitude": float(longitude)}
+                tags_data = tags_data.split(",")
+                story_serializer = StorySerializer(context = {'request':request}, data = request.data)
+                if story_serializer.is_valid():
+                    story = story_serializer.save()
+                    for tag_data in tags_data:
+                        if tag_data:
+                            tag_serializer = TagSerializer(data={"name": tag_data})
+                            if tag_serializer.is_valid():
+                                tag = tag_serializer.save()
+                                story.tags.add(tag)
+                    story.save()
+                    if location_data:
+                        location_serializer = LocationSerializer(data=location_data)
+                        if location_serializer.is_valid():
+                            location = location_serializer.save()
+                            story.location.add(location)
+                            story.save()
+                        
+                    return Response(story_serializer.data)
+            except Exception as e:
+                return Response("ErrorCreatingStory: " + str(e), status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response("UserNotLoggedIn", status=status.HTTP_401_UNAUTHORIZED)
+        
+    def list(self, request, *args, **kwargs):
+        response = viewsets.ModelViewSet.list(self, request, *args, **kwargs)
+        self.finalize_response(request, response, *args, **kwargs)
+        return response
     
 class TagViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
